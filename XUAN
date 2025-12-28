@@ -29,5 +29,5 @@ if isLocalPlayerWhitelisted then
     })
 loadstring(game:HttpGet("https://raw.githubusercontent.com/iqiq180jush-cell/Xuan/refs/heads/main/XUAN%20hub"))()
 else
-    localPlayer:Kick("你个死爹烂妈的没在白名单里")
+    localPlayer:Kick("我操你媽的逼給我滾")
 end
