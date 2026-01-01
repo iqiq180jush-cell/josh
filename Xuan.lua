@@ -12,7 +12,7 @@ if Whitelisted[player.UserId] then
     
     -- 載入遠程腳本（有錯誤處理）
     local success, errorMsg = pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/iqiq180jush-cell/josh/refs/heads/main/Xuan"))()
+        loadstring(game:HttpGet("https://github.com/iqiq180jush-cell/Xuan/blob/main/XUAN%20hub"))()
     end)
     
     if not success then
