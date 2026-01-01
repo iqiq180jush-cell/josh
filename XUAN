@@ -13,6 +13,7 @@ local WhitelistedPlayers = {
     ["brrt520"] = true,
     ["hotbrrt"] = true,
     ["anzile666"] = true,
+    ["jkasmn"] = true,
  }
 
 local function IsWhitelisted(player)
@@ -25,7 +26,7 @@ local isLocalPlayerWhitelisted = IsWhitelisted(localPlayer)
 
 if isLocalPlayerWhitelisted then
     StarterGui:SetCore("SendNotification", {
-        Title = "歡迎光臨使用我們最高貴的腳本",
+        Title = "歡迎光臨使用比糖逼吃因還強的腳本",
         Text = "玩家:"..localPlayer.Name.."，检测完毕白名单玩家，稍后会加载脚本",
         Duration = 7,
     })
