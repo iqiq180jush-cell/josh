@@ -42,75 +42,43 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera 
 local workspace = game:GetService("Workspace")  
 local Player = Players.LocalPlayer  
-
--- 在加載UI庫前先準備修改邏輯
-local function hookTextProperty()
-    -- 重寫TextButton的Text屬性setter
-    local mt = getrawmetatable(game)
-    if mt then
-        local oldIndex = mt.__index
-        local oldNewIndex = mt.__newindex
-        
-        mt.__newindex = newcclosure(function(self, key, value)
-            if key == "Text" and type(value) == "string" then
-                -- 攔截所有TextButton的Text設置
-                if self:IsA("TextButton") and value:find("零") then
-                    value = value:gsub("零", "GG")
-                end
-            end
-            return oldNewIndex(self, key, value)
-        end)
-    end
-end
-
--- 先執行hook
-hookTextProperty()
-
 local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/mknhghv/67/refs/heads/main/UI"))()  
+local win = ui:new("GG中心")  -- 這裡修改窗口標題
 
--- 創建窗口
-local win = ui:new("GG中心")
-
--- 立即開始快速修改
+-- 精確修改側邊按鈕（不影響其他UI）
 task.spawn(function()
-    -- 第一階段：快速循環修改（0.01秒間隔）
-    for i = 1, 50 do
-        for _, obj in pairs(game:GetService("CoreGui"):GetDescendants()) do
-            if obj:IsA("TextButton") and obj.Text then
-                if obj.Text:find("零中心") then
+    wait(2.5) -- 等待UI完全加載
+    
+    -- 查找並修改特定的側邊按鈕
+    for _, obj in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if obj:IsA("TextButton") and obj.Text then
+            -- 側邊按鈕的特徵：
+            -- 1. 位置在屏幕左側 (X < 50)
+            -- 2. 文字通常是"零中心"或類似的
+            -- 3. 可能是用來開關UI的按鈕
+            if obj.Position and obj.Position.X.Offset < 50 then
+                -- 只修改包含"零"字的按鈕
+                if obj.Text:find("零") then
                     obj.Text = "GG中心"
-                elseif obj.Text:find("零") then
-                    obj.Text = "GG中心"
+                    break -- 只修改一個按鈕
                 end
             end
         end
-        task.wait(0.01)  -- 非常短的間隔
     end
     
-    -- 第二階段：持續監控
-    while true do
-        task.wait(0.5)
-        for _, obj in pairs(game:GetService("CoreGui"):GetDescendants()) do
-            if obj:IsA("TextButton") and obj.Text and obj.Text:find("零") then
+    -- 如果上面的方法沒找到，嘗試另一種方法
+    wait(1)
+    local buttonCount = 0
+    for _, obj in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if obj:IsA("TextButton") and obj.Text then
+            buttonCount = buttonCount + 1
+            -- 找到第一個TextButton（通常是側邊按鈕）
+            if buttonCount == 1 then
                 obj.Text = "GG中心"
+                break
             end
         end
     end
-end)
-
--- 另外的方法：攔截Instance的新建
-task.spawn(function()
-    task.wait(0.5)
-    
-    -- 監聽新創建的實例
-    game:GetService("CoreGui").DescendantAdded:Connect(function(obj)
-        if obj:IsA("TextButton") then
-            task.wait(0.05)  -- 等待屬性設置
-            if obj.Text and obj.Text:find("零") then
-                obj.Text = "GG中心"
-            end
-        end
-    end)
 end)
 
 local UITab1 = win:Tab("公告",'7734068321')
