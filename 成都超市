@@ -43,16 +43,37 @@ local Camera = workspace.CurrentCamera
 local workspace = game:GetService("Workspace")  
 local Player = Players.LocalPlayer  
 local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/mknhghv/67/refs/heads/main/UI"))()  
+local win = ui:new("GG中心")  -- 這裡設置窗口標題
 
--- 嘗試多種方式設置UI標題和按鈕
-local win = ui:new("GG中心")  -- 主要標題
-
--- 嘗試額外設置按鈕文本
-if win.SetButtonText then
-    win:SetButtonText("GG中心")
-elseif win.ButtonText then
-    win.ButtonText = "GG中心"
-end
+-- 創建UI後，直接找到並修改側邊按鈕
+task.spawn(function()
+    wait(1.5) -- 等待UI完全加載
+    
+    -- 搜索並修改所有TextButton
+    for _, obj in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if obj:IsA("TextButton") and obj.Text then
+            -- 側邊按鈕通常在左側
+            if obj.Position and obj.Position.X.Scale < 0.1 then
+                obj.Text = "GG中心"
+            end
+            
+            -- 如果文字包含"零"或"中心"也修改
+            if obj.Text:find("零") or obj.Text:find("中心") then
+                obj.Text = "GG中心"
+            end
+        end
+    end
+    
+    -- 再檢查一次，確保修改成功
+    wait(1)
+    for _, obj in pairs(game:GetService("CoreGui"):GetDescendants()) do
+        if obj:IsA("TextButton") and obj.Text then
+            if obj.Text == "零中心" or obj.Text == "零脚本中心" or obj.Text == "GG脚本中心" then
+                obj.Text = "GG中心"
+            end
+        end
+    end
+end)
 
 local UITab1 = win:Tab("公告",'7734068321')
 local UITab2 = win:Tab("脚本",'7734068321')
@@ -860,20 +881,4 @@ TP2:Button("传送至九头蛇", function()
     
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-        print("已传送到九头蛇:", targetPosition)
-    end
-end)
-
-
-
-
-task.spawn(function()
-    task.wait(2) 
-    UpdateAllESP()
-end)
-
-game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "GG脚本",
-	Text = "加载完成 祝您使用愉快",
-	Duration = 5;
-})
+        print("已传送到九头蛇
