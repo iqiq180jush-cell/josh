@@ -43,33 +43,39 @@ local Camera = workspace.CurrentCamera
 local workspace = game:GetService("Workspace")  
 local Player = Players.LocalPlayer  
 local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/mknhghv/67/refs/heads/main/UI"))()  
-local win = ui:new("GG中心")  -- 這裡設置窗口標題
+local win = ui:new("GG中心")  -- 這裡修改窗口標題
 
--- 創建UI後，直接找到並修改側邊按鈕
+-- 精確修改側邊按鈕（不影響其他UI）
 task.spawn(function()
-    wait(1.5) -- 等待UI完全加載
+    wait(2.5) -- 等待UI完全加載
     
-    -- 搜索並修改所有TextButton
+    -- 查找並修改特定的側邊按鈕
     for _, obj in pairs(game:GetService("CoreGui"):GetDescendants()) do
         if obj:IsA("TextButton") and obj.Text then
-            -- 側邊按鈕通常在左側
-            if obj.Position and obj.Position.X.Scale < 0.1 then
-                obj.Text = "GG中心"
-            end
-            
-            -- 如果文字包含"零"或"中心"也修改
-            if obj.Text:find("零") or obj.Text:find("中心") then
-                obj.Text = "GG中心"
+            -- 側邊按鈕的特徵：
+            -- 1. 位置在屏幕左側 (X < 50)
+            -- 2. 文字通常是"零中心"或類似的
+            -- 3. 可能是用來開關UI的按鈕
+            if obj.Position and obj.Position.X.Offset < 50 then
+                -- 只修改包含"零"字的按鈕
+                if obj.Text:find("零") then
+                    obj.Text = "GG中心"
+                    break -- 只修改一個按鈕
+                end
             end
         end
     end
     
-    -- 再檢查一次，確保修改成功
+    -- 如果上面的方法沒找到，嘗試另一種方法
     wait(1)
+    local buttonCount = 0
     for _, obj in pairs(game:GetService("CoreGui"):GetDescendants()) do
         if obj:IsA("TextButton") and obj.Text then
-            if obj.Text == "零中心" or obj.Text == "零脚本中心" or obj.Text == "GG脚本中心" then
+            buttonCount = buttonCount + 1
+            -- 找到第一個TextButton（通常是側邊按鈕）
+            if buttonCount == 1 then
                 obj.Text = "GG中心"
+                break
             end
         end
     end
