@@ -43,7 +43,17 @@ local Camera = workspace.CurrentCamera
 local workspace = game:GetService("Workspace")  
 local Player = Players.LocalPlayer  
 local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/mknhghv/67/refs/heads/main/UI"))()  
-local win = ui:new("GG中心")  -- 這裡改成GG中心
+
+-- 嘗試多種方式設置UI標題和按鈕
+local win = ui:new("GG中心")  -- 主要標題
+
+-- 嘗試額外設置按鈕文本
+if win.SetButtonText then
+    win:SetButtonText("GG中心")
+elseif win.ButtonText then
+    win.ButtonText = "GG中心"
+end
+
 local UITab1 = win:Tab("公告",'7734068321')
 local UITab2 = win:Tab("脚本",'7734068321')
 local UITab3 = win:Tab("秒杀",'7734068321')
