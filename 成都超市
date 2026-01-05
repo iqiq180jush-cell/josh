@@ -8,7 +8,7 @@ old = hookmetamethod(game:GetService("StarterGui"), "__namecall", newcclosure(fu
         if method == "SetCore" and args[1] == "SendNotification" then
             local options = args[2]
             if type(options) == "table" and 
-               tostring(options.Title) == "玄丛脚本" and 
+               tostring(options.Title) == "GG脚本" and 
                tostring(options.Text) == "秦始皇制作" 
             then
                 local modifiedOptions = table.clone(options)
@@ -31,7 +31,7 @@ main.Start = returnnil
 
 
 game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "玄丛脚本",
+	Title = "GG脚本",
 	Text = "秦始皇制作",
 	Duration = 5;
 })
@@ -43,7 +43,7 @@ local Camera = workspace.CurrentCamera
 local workspace = game:GetService("Workspace")  
 local Player = Players.LocalPlayer  
 local ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/mknhghv/67/refs/heads/main/UI"))()  
-local win = ui:new("玄丛中心")
+local win = ui:new("GG脚本中心")
 local UITab1 = win:Tab("公告",'7734068321')
 local UITab2 = win:Tab("脚本",'7734068321')
 local UITab3 = win:Tab("秒杀",'7734068321')
@@ -115,7 +115,7 @@ end)
 -- 缝合
 
 about:Button("飞行",function()
-	loadstring(game:HttpGet("https://github.com/iqiq180jash-afk/Xuan/blob/main/%E9%A3%9B%E8%A1%8C"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaoxuan-77/-/refs/heads/main/fly"))()
 end)
 
 about:Button("法天象地",function()
@@ -135,10 +135,10 @@ game:GetService("Players").LocalPlayer.Idled:Connect(function()
     -- 當系統檢測到你閒置時，模擬滑鼠點擊螢幕，這比跳躍更穩
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new(0,0))
-    print("玄丛脚本 | 已攔截掛機檢測，持續運行中...")
+    print("GG脚本 | 已攔截掛機檢測，持續運行中...")
 end)
 
-about:Button("fps优化（開啟了就無法關閉）",function()
+about:Button("fps优化（关闭不了一点傻逼）",function()
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaoxuan-77/-/refs/heads/main/fps优化"))()
 end)
 
@@ -863,7 +863,7 @@ task.spawn(function()
 end)
 
 game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "玄丛脚本",
+	Title = "GG脚本",
 	Text = "加载完成 祝您使用愉快",
 	Duration = 5;
 })
