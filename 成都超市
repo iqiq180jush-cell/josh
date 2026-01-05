@@ -881,4 +881,20 @@ TP2:Button("传送至九头蛇", function()
     
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-        print("已传送到九头蛇
+        print("已传送到九头蛇:", targetPosition)
+    end
+end)
+
+
+
+
+task.spawn(function()
+    task.wait(2) 
+    UpdateAllESP()
+end)
+
+game:GetService("StarterGui"):SetCore("SendNotification",{
+	Title = "GG脚本",
+	Text = "加载完成 祝您使用愉快",
+	Duration = 5;
+})
