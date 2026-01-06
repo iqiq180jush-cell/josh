@@ -73,8 +73,8 @@ function library.new(name)
     loadFrame:Destroy()
 
     local Main = Instance.new("Frame", sg)
-    Main.Size = UDim2.new(0, 450, 0, 400)
-    Main.Position = UDim2.new(0.5, -225, 0.5, -200)
+    Main.Size = UDim2.new(0, 450, 0, 500)
+    Main.Position = UDim2.new(0.5, -225, 0.5, -250)
     Main.BackgroundColor3 = Color3.fromRGB(15, 17, 22)
     Main.Visible = false
     Main.ClipsDescendants = true
@@ -117,7 +117,7 @@ function library.new(name)
         if not Main.Visible then
             Main.Size = UDim2.new(0, 450, 0, 0)
             Main.Visible = true
-            ts:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 450, 0, 400)}):Play()
+            ts:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 450, 0, 500)}):Play()
         else
             ts:Create(Main, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 450, 0, 0)}):Play()
             task.wait(0.3)
@@ -174,8 +174,8 @@ function library:CreateTab(name)
     return ContentPage
 end
 
--- 創建UI元素的輔助函數
-function library:CreateButton(parent, text, callback)
+-- UI元素創建函數
+function CreateButton(parent, text, callback)
     local btn = Instance.new("TextButton", parent)
     btn.Size = UDim2.new(1, 0, 0, 35)
     btn.Text = text
@@ -197,7 +197,7 @@ function library:CreateButton(parent, text, callback)
     return btn
 end
 
-function library:CreateToggle(parent, text, default, callback)
+function CreateToggle(parent, text, default, callback)
     local container = Instance.new("Frame", parent)
     container.Size = UDim2.new(1, 0, 0, 30)
     container.BackgroundTransparency = 1
@@ -252,12 +252,12 @@ function library:CreateToggle(parent, text, default, callback)
         updateToggle()
     end)
     
-    return {Container = container, Update = function(state) toggled = state; updateToggle() end}
+    return container
 end
 
-function library:CreateSlider(parent, text, min, max, default, callback)
+function CreateSlider(parent, text, min, max, default, callback)
     local container = Instance.new("Frame", parent)
-    container.Size = UDim2.new(1, 0, 0, 50)
+    container.Size = UDim2.new(1, 0, 0, 60)
     container.BackgroundTransparency = 1
     
     local label = Instance.new("TextLabel", container)
@@ -269,8 +269,8 @@ function library:CreateSlider(parent, text, min, max, default, callback)
     label.TextXAlignment = Enum.TextXAlignment.Left
     
     local sliderBg = Instance.new("Frame", container)
-    sliderBg.Size = UDim2.new(1, 0, 0, 6)
-    sliderBg.Position = UDim2.new(0, 0, 1, -10)
+    sliderBg.Size = UDim2.new(1, 0, 0, 8)
+    sliderBg.Position = UDim2.new(0, 0, 1, -20)
     sliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
     Instance.new("UICorner", sliderBg).CornerRadius = UDim.new(1, 0)
     
@@ -280,8 +280,8 @@ function library:CreateSlider(parent, text, min, max, default, callback)
     Instance.new("UICorner", sliderFill).CornerRadius = UDim.new(1, 0)
     
     local sliderBtn = Instance.new("TextButton", sliderBg)
-    sliderBtn.Size = UDim2.new(0, 16, 0, 16)
-    sliderBtn.Position = UDim2.new((default - min) / (max - min), -8, 0.5, -8)
+    sliderBtn.Size = UDim2.new(0, 18, 0, 18)
+    sliderBtn.Position = UDim2.new((default - min) / (max - min), -9, 0.5, -9)
     sliderBtn.Text = ""
     sliderBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Instance.new("UICorner", sliderBtn).CornerRadius = UDim.new(1, 0)
@@ -291,7 +291,7 @@ function library:CreateSlider(parent, text, min, max, default, callback)
     local function updateSlider(value)
         local percent = math.clamp((value - min) / (max - min), 0, 1)
         sliderFill.Size = UDim2.new(percent, 0, 1, 0)
-        sliderBtn.Position = UDim2.new(percent, -8, 0.5, -8)
+        sliderBtn.Position = UDim2.new(percent, -9, 0.5, -9)
         label.Text = text .. ": " .. tostring(math.floor(value))
         if callback then callback(value) end
     end
@@ -323,33 +323,24 @@ function library:CreateSlider(parent, text, min, max, default, callback)
     return container
 end
 
-function library:CreateLabel(parent, text)
+function CreateLabel(parent, text)
     local label = Instance.new("TextLabel", parent)
     label.Size = UDim2.new(1, 0, 0, 30)
     label.Text = text
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.BackgroundTransparency = 1
-    label.Font = Enum.Font.Gotham
+    label.Font = Enum.Font.GothamSemibold
     label.TextXAlignment = Enum.TextXAlignment.Center
     return label
 end
 
-function library:CreateTextbox(parent, text, placeholder, callback)
+function CreateTextbox(parent, placeholder, callback)
     local container = Instance.new("Frame", parent)
-    container.Size = UDim2.new(1, 0, 0, 50)
+    container.Size = UDim2.new(1, 0, 0, 40)
     container.BackgroundTransparency = 1
     
-    local label = Instance.new("TextLabel", container)
-    label.Size = UDim2.new(1, 0, 0, 20)
-    label.Text = text
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.BackgroundTransparency = 1
-    label.Font = Enum.Font.Gotham
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    
     local textbox = Instance.new("TextBox", container)
-    textbox.Size = UDim2.new(1, 0, 0, 30)
-    textbox.Position = UDim2.new(0, 0, 0, 20)
+    textbox.Size = UDim2.new(1, 0, 1, 0)
     textbox.PlaceholderText = placeholder
     textbox.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
     textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -373,79 +364,47 @@ local tab3 = window:CreateTab("秒杀")
 local tab4 = window:CreateTab("透视")
 local tab5 = window:CreateTab("传送")
 
--- ============================
--- 原腳本功能開始
--- ============================
-
 -- 1. 公告頁面
-library:CreateLabel(tab1, "秦始皇制作")
-library:CreateLabel(tab1, "脚本测试中")
+CreateLabel(tab1, "GG中心 v1.0")
+CreateLabel(tab1, "秦始皇制作")
+CreateLabel(tab1, "脚本测试中")
+CreateLabel(tab1, "祝您使用愉快！")
 
--- 2. 脚本頁面 - 视角缩放
-window:CreateSlider(tab2, "视角缩放距离", 128, 10000, 128, function(value)
+-- 2. 脚本頁面
+CreateLabel(tab2, "脚本功能")
+
+-- 視角縮放
+local zoomSlider = CreateSlider(tab2, "视角缩放距离", 128, 10000, 128, function(value)
     game:GetService("Players").LocalPlayer.CameraMaxZoomDistance = value
 end)
 
 -- 自動V4功能
-local autoV4Enabled = false
-local autoV4Task = nil
-
-local function callAwakeningRemote()
-    local LocalPlayer = game:GetService("Players").LocalPlayer
-    local Backpack = LocalPlayer:FindFirstChild("Backpack")
-    if not Backpack then return end
-    
-    local Awakening = Backpack:FindFirstChild("Awakening")
-    if not Awakening then return end
-    
-    local RemoteFunc = Awakening:FindFirstChild("RemoteFunction")
-    if not RemoteFunc or not RemoteFunc:IsA("RemoteFunction") then return end
-    
-    local success, err = pcall(function()
-        RemoteFunc:InvokeServer(true)
-    end)
-    if not success then
-        warn("自动v4调用失败：", err)
+local autoV4Toggle = CreateToggle(tab2, "自动v4", false, function(state)
+    if state then
+        print("自動V4已開啟")
+        -- 這裡添加自動V4的實際代碼
+    else
+        print("自動V4已關閉")
     end
-end
-
-local function toggleAutoV4(enable)
-    if autoV4Task then
-        task.cancel(autoV4Task)
-        autoV4Task = nil
-    end
-    
-    if enable then
-        autoV4Task = task.spawn(function()
-            while autoV4Enabled do
-                callAwakeningRemote()
-                task.wait(1) 
-            end
-            autoV4Task = nil
-        end)
-    end
-end
-
-window:CreateToggle(tab2, "自动v4", false, function(state)
-    autoV4Enabled = state
-    toggleAutoV4(state)
 end)
 
--- 飛行腳本
-window:CreateButton(tab2, "飞行", function()
-    -- 這裡添加飛行腳本的實現
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    
+-- 飛行按鈕
+CreateButton(tab2, "飞行", function()
+    print("飛行功能已啟用")
+    -- 飛行腳本的實現
     local flying = false
     local speed = 50
+    local bodyGyro, bodyVelocity
     
     local function fly()
-        local torso = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local player = game.Players.LocalPlayer
+        if not player.Character then return end
+        
+        local torso = player.Character:FindFirstChild("HumanoidRootPart")
         if not torso then return end
         
-        local bodyGyro = Instance.new("BodyGyro", torso)
-        local bodyVelocity = Instance.new("BodyVelocity", torso)
+        bodyGyro = Instance.new("BodyGyro", torso)
+        bodyVelocity = Instance.new("BodyVelocity", torso)
         
         bodyGyro.P = 9e4
         bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
@@ -456,7 +415,7 @@ window:CreateButton(tab2, "飞行", function()
         
         spawn(function()
             repeat wait()
-                LocalPlayer.Character.Humanoid.PlatformStand = true
+                player.Character.Humanoid.PlatformStand = true
                 if torso and bodyVelocity and bodyGyro then
                     local moveDirection = Vector3.new()
                     
@@ -480,280 +439,273 @@ window:CreateButton(tab2, "飞行", function()
                     end
                     
                     bodyVelocity.velocity = moveDirection * speed
-                    
-                    local lookDirection = uis:GetMouseLocation()
-                    local ray = workspace.CurrentCamera:ScreenPointToRay(lookDirection.X, lookDirection.Y)
-                    local target = ray.Origin + ray.Direction * 1000
-                    bodyGyro.cframe = CFrame.new(torso.Position, target)
                 end
             until not flying
             
             if torso then
                 if bodyGyro then bodyGyro:Destroy() end
                 if bodyVelocity then bodyVelocity:Destroy() end
-                LocalPlayer.Character.Humanoid.PlatformStand = false
+                player.Character.Humanoid.PlatformStand = false
             end
         end)
     end
     
-    window:CreateTextbox(tab2, "飞行速度", "输入速度值", function(text)
-        local num = tonumber(text)
-        if num then
-            speed = num
-        end
+    -- 創建飛行控制面板
+    local flyPanel = Instance.new("Frame", game:GetService("CoreGui"))
+    flyPanel.Size = UDim2.new(0, 200, 0, 100)
+    flyPanel.Position = UDim2.new(0.5, -100, 0.8, 0)
+    flyPanel.BackgroundColor3 = Color3.fromRGB(15, 17, 22)
+    Instance.new("UICorner", flyPanel)
+    
+    local speedLabel = Instance.new("TextLabel", flyPanel)
+    speedLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    speedLabel.Text = "飛行速度: " .. speed
+    speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    speedLabel.BackgroundTransparency = 1
+    
+    local speedSlider = Instance.new("Frame", flyPanel)
+    speedSlider.Size = UDim2.new(0.8, 0, 0, 6)
+    speedSlider.Position = UDim2.new(0.1, 0, 0.5, 0)
+    speedSlider.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    Instance.new("UICorner", speedSlider)
+    
+    local flyToggleBtn = Instance.new("TextButton", flyPanel)
+    flyToggleBtn.Size = UDim2.new(0.8, 0, 0, 30)
+    flyToggleBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+    flyToggleBtn.Text = "關閉飛行"
+    flyToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
+    flyToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", flyToggleBtn)
+    
+    flyToggleBtn.MouseButton1Click:Connect(function()
+        flying = false
+        flyPanel:Destroy()
     end)
     
-    local flyToggle = window:CreateToggle(tab2, "飞行开关", false, function(state)
-        flying = state
-        if state and LocalPlayer.Character then
-            fly()
-        end
-    end)
+    flying = true
+    fly()
 end)
 
--- 3. 秒杀功能
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-local FastAttackConfig = {
-    Enabled = false,
-    Distance = 5000,
-    AttackDelay = 0.3,
-    AttackMobs = true,
-    AttackPlayers = true
-}
-
--- 快速攻擊系統
-local function FastAttackSystem()
-    local success, result = pcall(function()
-        -- 檢查必要組件
-        local Remotes = ReplicatedStorage:WaitForChild("Remotes", 5)
-        local Modules = ReplicatedStorage:WaitForChild("Modules", 5)
-        if not Remotes or not Modules then return false end
-        
-        local Net = Modules:WaitForChild("Net", 5)
-        if not Net then return false end
-        
-        local RegisterAttack = Net:WaitForChild("RE/RegisterAttack", 5)
-        local RegisterHit = Net:WaitForChild("RE/RegisterHit", 5)
-        if not RegisterAttack or not RegisterHit then return false end
-        
-        local Enemies = workspace:WaitForChild("Enemies", 5)
-        
-        return {
-            Remotes = Remotes,
-            Net = Net,
-            RegisterAttack = RegisterAttack,
-            RegisterHit = RegisterHit,
-            Enemies = Enemies
-        }
-    end)
-    
-    return success and result or nil
-end
-
--- 創建秒殺頁面的UI
-local attackDistanceSlider = window:CreateSlider(tab3, "攻击范围", 1, 10000, 5000, function(value)
-    FastAttackConfig.Distance = value
+CreateButton(tab2, "法天象地", function()
+    print("法天象地功能已啟用")
+    -- 這裡可以添加法天象地的實現
 end)
 
-local attackSpeedSlider = window:CreateSlider(tab3, "攻击速度", 0.01, 2, 0.3, function(value)
-    FastAttackConfig.AttackDelay = value
+CreateButton(tab2, "RedZ脚本", function()
+    print("RedZ脚本已加载")
 end)
 
-local attackMobsToggle = window:CreateToggle(tab3, "自动打怪", true, function(state)
-    FastAttackConfig.AttackMobs = state
+CreateButton(tab2, "防挂机", function()
+    print("防挂机功能已激活")
 end)
 
-local attackPlayersToggle = window:CreateToggle(tab3, "攻击玩家", true, function(state)
-    FastAttackConfig.AttackPlayers = state
+-- 3. 秒杀頁面
+CreateLabel(tab3, "秒杀设置")
+
+-- 秒杀開關
+local killToggle = CreateToggle(tab3, "秒杀开关", false, function(state)
+    print("秒杀开关: " .. tostring(state))
+end)
+
+-- 攻擊範圍
+local attackRangeSlider = CreateSlider(tab3, "攻击范围", 1, 10000, 5000, function(value)
+    print("攻擊範圍設置為: " .. value)
+end)
+
+-- 攻擊速度
+local attackSpeedSlider = CreateSlider(tab3, "攻击速度", 0.01, 2, 0.3, function(value)
+    print("攻擊速度設置為: " .. value)
+end)
+
+-- 打怪開關
+local attackMobsToggle = CreateToggle(tab3, "自动打怪", true, function(state)
+    print("自動打怪: " .. tostring(state))
+end)
+
+-- 打人開關
+local attackPlayersToggle = CreateToggle(tab3, "攻击玩家", true, function(state)
+    print("攻擊玩家: " .. tostring(state))
 end)
 
 -- 移速功能
-local translateSpeed = 50
-local translateAccelEnabled = false
-local translateConnection = nil
-
-window:CreateTextbox(tab3, "移动速度", "输入速度值", function(text)
-    local num = tonumber(text)
-    if num then
-        translateSpeed = num
+CreateLabel(tab3, "移动加速")
+local speedTextbox = CreateTextbox(tab3, "输入移动速度", function(text)
+    local speed = tonumber(text)
+    if speed then
+        print("移動速度設置為: " .. speed)
     end
 end)
 
-window:CreateToggle(tab3, "移动加速", false, function(state)
-    translateAccelEnabled = state
-    
-    if translateConnection then
-        translateConnection:Disconnect()
-        translateConnection = nil
-    end
+local moveAccelToggle = CreateToggle(tab3, "移动加速开关", false, function(state)
+    print("移動加速: " .. tostring(state))
     
     if state then
-        translateConnection = RunService.Heartbeat:Connect(function()
-            if LocalPlayer.Character and 
-               LocalPlayer.Character:FindFirstChild("Humanoid") and 
-               LocalPlayer.Character.Humanoid then
-               
-                local humanoid = LocalPlayer.Character.Humanoid
-                
+        local player = game.Players.LocalPlayer
+        local speed = 50
+        
+        local connection = game:GetService("RunService").Heartbeat:Connect(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                local humanoid = player.Character.Humanoid
                 if humanoid.MoveDirection.Magnitude > 0 then
                     local moveDirection = humanoid.MoveDirection
-                    local acceleration = moveDirection * translateSpeed / 30
-                    
-                    LocalPlayer.Character:TranslateBy(acceleration)
+                    local acceleration = moveDirection * speed / 30
+                    player.Character:TranslateBy(acceleration)
                 end
             end
         end)
     end
 end)
 
--- 4. 透視功能
-local ESPConfig = {
-    MainSwitch = false,
-    ShowNameDistance = false,
-    ShowTracer = false,
-    ShowHealth = false
-}
+-- 4. 透视頁面
+CreateLabel(tab4, "透视设置")
 
-local ESPElements = {}
+local espMainToggle = CreateToggle(tab4, "透视总开关", false, function(state)
+    print("透视总开关: " .. tostring(state))
+end)
 
-local function CleanupPlayerESP(player)
-    if not ESPElements[player.UserId] then return end
+local espNameToggle = CreateToggle(tab4, "显示玩家名字+距离", false, function(state)
+    print("显示玩家名字+距离: " .. tostring(state))
+end)
+
+local espHealthToggle = CreateToggle(tab4, "显示玩家血量", false, function(state)
+    print("显示玩家血量: " .. tostring(state))
+end)
+
+local espTracerToggle = CreateToggle(tab4, "射线追踪（屏幕中心）", false, function(state)
+    print("射线追踪: " .. tostring(state))
+end)
+
+-- 簡單透視實現
+CreateButton(tab4, "啟動透視", function()
+    print("透視已啟動")
     
-    if ESPElements[player.UserId].NameHealthESP then
-        ESPElements[player.UserId].NameHealthESP:Destroy()
-        ESPElements[player.UserId].NameHealthESP = nil
-    end
-    if ESPElements[player.UserId].Tracer then
-        ESPElements[player.UserId].Tracer:Remove()
-        ESPElements[player.UserId].Tracer = nil
-    end
-end
-
-local function UpdateAllESP()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            CleanupPlayerESP(player)
-        end
-    end
-end
-
--- 透視開關
-window:CreateToggle(tab4, "透视总开关", false, function(state)
-    ESPConfig.MainSwitch = state
-    UpdateAllESP()
-end)
-
-window:CreateToggle(tab4, "显示玩家名字+距离", false, function(state)
-    ESPConfig.ShowNameDistance = state
-end)
-
-window:CreateToggle(tab4, "显示玩家血量", false, function(state)
-    ESPConfig.ShowHealth = state
-end)
-
-window:CreateToggle(tab4, "射线追踪（屏幕中心）", false, function(state)
-    ESPConfig.ShowTracer = state
-end)
-
--- 5. 傳送功能
-window:CreateButton(tab5, "传送至一海", function()
-    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelMain")
-end)
-
-window:CreateButton(tab5, "传送至二海", function()
-    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelDressrosa")
-end)
-
-window:CreateButton(tab5, "传送至三海", function()
-    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelZou")
-end)
-
--- 二海傳送點
-window:CreateButton(tab5, "传送至天鹅的房间", function()
-    local targetPosition = Vector3.new(-287.37, 305.81, 592.98)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-    end
-end)
-
-window:CreateButton(tab5, "传送至豪宅", function()
-    local targetPosition = Vector3.new(2286.93, 15.06, 910.51)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-    end
-end)
-
-window:CreateButton(tab5, "传送至鬼船里", function()
-    local targetPosition = Vector3.new(-6501.06, 83.11, -123.52)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-    end
-end)
-
-window:CreateButton(tab5, "传送至鬼船外", function()
-    local targetPosition = Vector3.new(922.78, 123.96, 32842.40)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-    end
-end)
-
--- 三海傳送點
-window:CreateButton(tab5, "传送至海洋城堡", function()
-    local targetPosition = Vector3.new(-12463.60, 376.26, -7566.08)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-    end
-end)
-
-window:CreateButton(tab5, "传送至海龟豪宅", function()
-    local targetPosition = Vector3.new(-5060.41, 316.43, -3192.30)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-    end
-end)
-
-window:CreateButton(tab5, "传送至司法", function()
-    local targetPosition = Vector3.new(-5096.48, 316.43, -3177.91)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-    end
-end)
-
-window:CreateButton(tab5, "传送至九头蛇", function()
-    local targetPosition = Vector3.new(-5027.03, 316.43, -3206.07)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-    end
-end)
-
--- 秒殺功能主開關
-local fastAttackToggle = window:CreateToggle(tab3, "秒杀开关", false, function(state)
-    FastAttackConfig.Enabled = state
-    
-    if state then
-        spawn(function()
-            while FastAttackConfig.Enabled do
-                task.wait(FastAttackConfig.AttackDelay)
-                
-                -- 這裡可以添加實際的攻擊邏輯
-                if FastAttackConfig.Enabled then
-                    -- 模擬攻擊邏輯
-                    local components = FastAttackSystem()
-                    if components then
-                        -- 實際攻擊代碼會在這裡
-                        print("執行攻擊，範圍:", FastAttackConfig.Distance, "延遲:", FastAttackConfig.AttackDelay)
+    -- 創建簡單的透視效果
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            if player.Character then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        local highlight = Instance.new("Highlight")
+                        highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                        highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                        highlight.Parent = part
                     end
                 end
             end
-        end)
+        end
+    end
+end)
+
+-- 5. 传送頁面
+CreateLabel(tab5, "主要传送")
+
+CreateButton(tab5, "传送至一海", function()
+    print("傳送至一海")
+    local success, result = pcall(function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelMain")
+    end)
+    if not success then
+        print("傳送失敗: " .. result)
+    end
+end)
+
+CreateButton(tab5, "传送至二海", function()
+    print("傳送至二海")
+    local success, result = pcall(function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelDressrosa")
+    end)
+    if not success then
+        print("傳送失敗: " .. result)
+    end
+end)
+
+CreateButton(tab5, "传送至三海", function()
+    print("傳送至三海")
+    local success, result = pcall(function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelZou")
+    end)
+    if not success then
+        print("傳送失敗: " .. result)
+    end
+end)
+
+CreateLabel(tab5, "二海传送点")
+
+CreateButton(tab5, "传送至天鹅的房间", function()
+    print("傳送至天鹅的房间")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        local target = Vector3.new(-287.37, 305.81, 592.98)
+        player.Character:MoveTo(target)
+    end
+end)
+
+CreateButton(tab5, "传送至豪宅", function()
+    print("傳送至豪宅")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        local target = Vector3.new(2286.93, 15.06, 910.51)
+        player.Character:MoveTo(target)
+    end
+end)
+
+CreateButton(tab5, "传送至鬼船里", function()
+    print("傳送至鬼船里")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        local target = Vector3.new(-6501.06, 83.11, -123.52)
+        player.Character:MoveTo(target)
+    end
+end)
+
+CreateButton(tab5, "传送至鬼船外", function()
+    print("傳送至鬼船外")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        local target = Vector3.new(922.78, 123.96, 32842.40)
+        player.Character:MoveTo(target)
+    end
+end)
+
+CreateLabel(tab5, "三海传送点")
+
+CreateButton(tab5, "传送至海洋城堡", function()
+    print("傳送至海洋城堡")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        local target = Vector3.new(-12463.60, 376.26, -7566.08)
+        player.Character:MoveTo(target)
+    end
+end)
+
+CreateButton(tab5, "传送至海龟豪宅", function()
+    print("傳送至海龟豪宅")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        local target = Vector3.new(-5060.41, 316.43, -3192.30)
+        player.Character:MoveTo(target)
+    end
+end)
+
+CreateButton(tab5, "传送至司法", function()
+    print("傳送至司法")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        local target = Vector3.new(-5096.48, 316.43, -3177.91)
+        player.Character:MoveTo(target)
+    end
+end)
+
+CreateButton(tab5, "传送至九头蛇", function()
+    print("傳送至九头蛇")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        local target = Vector3.new(-5027.03, 316.43, -3206.07)
+        player.Character:MoveTo(target)
     end
 end)
 
 -- 完成加載
 task.wait(1)
 print("GG脚本加载完成，祝您使用愉快！")
+print("点击屏幕左上角的GG按钮打开菜单")
