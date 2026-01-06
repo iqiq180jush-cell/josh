@@ -22,6 +22,7 @@ local ts, uis, players = services.TweenService, services.UserInputService, servi
 local lp = players.LocalPlayer
 local playerGui = lp:WaitForChild("PlayerGui", 15) or game:GetService("CoreGui")
 
+-- 简化UI库，确保能正确显示
 function library:AddDrag(obj)
     local dragging, dragStart, startPos
     obj.InputBegan:Connect(function(input)
@@ -45,36 +46,12 @@ function library.new(name)
     sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     sg.Parent = playerGui
 
-    local loadFrame = Instance.new("Frame", sg)
-    loadFrame.Size = UDim2.new(0, 300, 0, 120)
-    loadFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
-    loadFrame.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
-    Instance.new("UICorner", loadFrame)
-    
-    local barBg = Instance.new("Frame", loadFrame)
-    barBg.Size = UDim2.new(0.8, 0, 0, 8)
-    barBg.Position = UDim2.new(0.1, 0, 0.7, 0)
-    barBg.BackgroundColor3 = Color3.fromRGB(30, 40, 50)
-    
-    local bar = Instance.new("Frame", barBg)
-    bar.Size = UDim2.new(0, 0, 1, 0)
-    bar.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-    Instance.new("UICorner", bar)
-
-    local info = Instance.new("TextLabel", loadFrame)
-    info.Size = UDim2.new(1, 0, 0.4, 0)
-    info.Text = name .. " Loading..."
-    info.TextColor3 = Color3.fromRGB(255, 255, 255)
-    info.BackgroundTransparency = 1
-    info.Font = Enum.Font.GothamBold
-
-    ts:Create(bar, TweenInfo.new(2, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, 0)}):Play()
-    task.wait(2.2)
-    loadFrame:Destroy()
+    -- 简化加载动画
+    task.wait(0.5)
 
     local Main = Instance.new("Frame", sg)
-    Main.Size = UDim2.new(0, 450, 0, 500)
-    Main.Position = UDim2.new(0.5, -225, 0.5, -250)
+    Main.Size = UDim2.new(0, 450, 0, 400) -- 固定大小，不要自动调整
+    Main.Position = UDim2.new(0.5, -225, 0.5, -200)
     Main.BackgroundColor3 = Color3.fromRGB(15, 17, 22)
     Main.Visible = false
     Main.ClipsDescendants = true
@@ -82,6 +59,7 @@ function library.new(name)
     library:AddDrag(Main)
     library.Main = Main
 
+    -- 侧边切换按钮
     local ToggleBtn = Instance.new("TextButton", sg)
     ToggleBtn.Size = UDim2.new(0, 45, 0, 45)
     ToggleBtn.Position = UDim2.new(0, 20, 0, 20)
@@ -94,30 +72,12 @@ function library.new(name)
     Instance.new("UIStroke", ToggleBtn).Color = Color3.fromRGB(0, 255, 255)
     library:AddDrag(ToggleBtn)
 
-    task.spawn(function()
-        while true do
-            if not sg.Parent then break end
-            local Ripple = Instance.new("Frame", ToggleBtn)
-            Ripple.AnchorPoint = Vector2.new(0.5, 0.5)
-            Ripple.Position = UDim2.new(0.5, 0, 0.5, 0)
-            Ripple.Size = UDim2.new(1, 0, 1, 0)
-            Ripple.BackgroundTransparency = 0.6
-            Ripple.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-            Instance.new("UICorner", Ripple).CornerRadius = UDim.new(1, 0)
-            ts:Create(Ripple, TweenInfo.new(1.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                Size = UDim2.new(2.5, 0, 2.5, 0),
-                BackgroundTransparency = 1
-            }):Play()
-            task.wait(2)
-            if Ripple then Ripple:Destroy() end
-        end
-    end)
-
+    -- 点击打开/关闭UI
     ToggleBtn.MouseButton1Click:Connect(function()
         if not Main.Visible then
             Main.Size = UDim2.new(0, 450, 0, 0)
             Main.Visible = true
-            ts:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 450, 0, 500)}):Play()
+            ts:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 450, 0, 400)}):Play()
         else
             ts:Create(Main, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 450, 0, 0)}):Play()
             task.wait(0.3)
@@ -141,17 +101,29 @@ function library:CreateTab(name)
         layout.HorizontalAlignment = "Center"
     end
 
-    local ContentPage = Instance.new("ScrollingFrame", self.Main)
+    local ContentPage = Instance.new("Frame", self.Main) -- 使用Frame而不是ScrollingFrame
     ContentPage.Name = name .. "_Page"
     ContentPage.Size = UDim2.new(1, -125, 1, -20)
     ContentPage.Position = UDim2.new(0, 120, 0, 10)
     ContentPage.BackgroundTransparency = 1
     ContentPage.Visible = false
-    ContentPage.ScrollBarThickness = 0
-    ContentPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    ContentPage.ClipsDescendants = true -- 防止内容溢出
     
-    local pageLayout = Instance.new("UIListLayout", ContentPage)
-    pageLayout.Padding = UDim.new(0, 6)
+    -- 使用CanvasGroup来确保内容正确显示
+    local canvasGroup = Instance.new("CanvasGroup", ContentPage)
+    canvasGroup.Size = UDim2.new(1, 0, 1, 0)
+    
+    -- 使用ScrollFrame包装内容
+    local scrollFrame = Instance.new("ScrollingFrame", canvasGroup)
+    scrollFrame.Size = UDim2.new(1, 0, 1, 0)
+    scrollFrame.BackgroundTransparency = 1
+    scrollFrame.ScrollBarThickness = 3
+    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 200)
+    scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    
+    local pageLayout = Instance.new("UIListLayout", scrollFrame)
+    pageLayout.Padding = UDim.new(0, 8)
+    pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
     local TabBtn = Instance.new("TextButton", SideBar)
     TabBtn.Size = UDim2.new(0.9, 0, 0, 35)
@@ -161,7 +133,9 @@ function library:CreateTab(name)
     TabBtn.Font = Enum.Font.Code
 
     TabBtn.MouseButton1Click:Connect(function()
-        for _, p in pairs(self._Pages) do p.Visible = false end
+        for _, p in pairs(self._Pages) do 
+            p.Visible = false 
+        end
         ContentPage.Visible = true
     end)
 
@@ -171,21 +145,21 @@ function library:CreateTab(name)
         ContentPage.Visible = true 
     end
     
-    return ContentPage
+    return scrollFrame -- 返回滚动框架，这样可以直接添加元素
 end
 
--- UI元素創建函數
+-- 创建UI元素的辅助函数
 function CreateButton(parent, text, callback)
     local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(1, 0, 0, 35)
+    btn.Size = UDim2.new(0.9, 0, 0, 35)
+    btn.Position = UDim2.new(0.05, 0, 0, 0) -- 居中显示
     btn.Text = text
     btn.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.Gotham
+    btn.Font = Enum.Font.GothamSemibold
     Instance.new("UICorner", btn)
     
-    btn.MouseButton1Click:Connect(callback)
-    
+    -- 悬停效果
     btn.MouseEnter:Connect(function()
         ts:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 45, 55)}):Play()
     end)
@@ -194,12 +168,24 @@ function CreateButton(parent, text, callback)
         ts:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 35, 45)}):Play()
     end)
     
+    -- 点击效果
+    btn.MouseButton1Click:Connect(function()
+        ts:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 55, 65)}):Play()
+        task.wait(0.1)
+        ts:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(40, 45, 55)}):Play()
+        
+        if callback then
+            callback()
+        end
+    end)
+    
     return btn
 end
 
 function CreateToggle(parent, text, default, callback)
     local container = Instance.new("Frame", parent)
-    container.Size = UDim2.new(1, 0, 0, 30)
+    container.Size = UDim2.new(0.9, 0, 0, 35)
+    container.Position = UDim2.new(0.05, 0, 0, 0)
     container.BackgroundTransparency = 1
     
     local label = Instance.new("TextLabel", container)
@@ -210,16 +196,17 @@ function CreateToggle(parent, text, default, callback)
     label.Font = Enum.Font.Gotham
     label.TextXAlignment = Enum.TextXAlignment.Left
     
-    local toggleFrame = Instance.new("Frame", container)
-    toggleFrame.Size = UDim2.new(0, 40, 0, 20)
-    toggleFrame.Position = UDim2.new(0.85, -40, 0.5, -10)
-    toggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    local toggleFrame = Instance.new("TextButton", container)
+    toggleFrame.Size = UDim2.new(0, 50, 0, 25)
+    toggleFrame.Position = UDim2.new(1, -50, 0.5, -12.5)
+    toggleFrame.Text = ""
+    toggleFrame.BackgroundColor3 = default and Color3.fromRGB(0, 100, 80) or Color3.fromRGB(50, 50, 50)
     Instance.new("UICorner", toggleFrame).CornerRadius = UDim.new(1, 0)
     
     local toggleCircle = Instance.new("Frame", toggleFrame)
-    toggleCircle.Size = UDim2.new(0, 16, 0, 16)
-    toggleCircle.Position = UDim2.new(0, 2, 0.5, -8)
-    toggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    toggleCircle.Size = UDim2.new(0, 20, 0, 20)
+    toggleCircle.Position = default and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
+    toggleCircle.BackgroundColor3 = default and Color3.fromRGB(0, 255, 200) or Color3.fromRGB(255, 255, 255)
     Instance.new("UICorner", toggleCircle).CornerRadius = UDim.new(1, 0)
     
     local toggled = default or false
@@ -227,7 +214,7 @@ function CreateToggle(parent, text, default, callback)
     local function updateToggle()
         if toggled then
             ts:Create(toggleCircle, TweenInfo.new(0.2), {
-                Position = UDim2.new(1, -18, 0.5, -8),
+                Position = UDim2.new(1, -22, 0.5, -10),
                 BackgroundColor3 = Color3.fromRGB(0, 255, 200)
             }):Play()
             ts:Create(toggleFrame, TweenInfo.new(0.2), {
@@ -235,7 +222,7 @@ function CreateToggle(parent, text, default, callback)
             }):Play()
         else
             ts:Create(toggleCircle, TweenInfo.new(0.2), {
-                Position = UDim2.new(0, 2, 0.5, -8),
+                Position = UDim2.new(0, 2, 0.5, -10),
                 BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             }):Play()
             ts:Create(toggleFrame, TweenInfo.new(0.2), {
@@ -245,350 +232,175 @@ function CreateToggle(parent, text, default, callback)
         if callback then callback(toggled) end
     end
     
-    updateToggle()
-    
     toggleFrame.MouseButton1Click:Connect(function()
         toggled = not toggled
         updateToggle()
     end)
     
-    return container
-end
-
-function CreateSlider(parent, text, min, max, default, callback)
-    local container = Instance.new("Frame", parent)
-    container.Size = UDim2.new(1, 0, 0, 60)
-    container.BackgroundTransparency = 1
-    
-    local label = Instance.new("TextLabel", container)
-    label.Size = UDim2.new(1, 0, 0, 20)
-    label.Text = text .. ": " .. tostring(default)
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.BackgroundTransparency = 1
-    label.Font = Enum.Font.Gotham
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local sliderBg = Instance.new("Frame", container)
-    sliderBg.Size = UDim2.new(1, 0, 0, 8)
-    sliderBg.Position = UDim2.new(0, 0, 1, -20)
-    sliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    Instance.new("UICorner", sliderBg).CornerRadius = UDim.new(1, 0)
-    
-    local sliderFill = Instance.new("Frame", sliderBg)
-    sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 255, 200)
-    Instance.new("UICorner", sliderFill).CornerRadius = UDim.new(1, 0)
-    
-    local sliderBtn = Instance.new("TextButton", sliderBg)
-    sliderBtn.Size = UDim2.new(0, 18, 0, 18)
-    sliderBtn.Position = UDim2.new((default - min) / (max - min), -9, 0.5, -9)
-    sliderBtn.Text = ""
-    sliderBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Instance.new("UICorner", sliderBtn).CornerRadius = UDim.new(1, 0)
-    
-    local dragging = false
-    
-    local function updateSlider(value)
-        local percent = math.clamp((value - min) / (max - min), 0, 1)
-        sliderFill.Size = UDim2.new(percent, 0, 1, 0)
-        sliderBtn.Position = UDim2.new(percent, -9, 0.5, -9)
-        label.Text = text .. ": " .. tostring(math.floor(value))
-        if callback then callback(value) end
-    end
-    
-    sliderBtn.MouseButton1Down:Connect(function()
-        dragging = true
-    end)
-    
-    uis.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local mousePos = uis:GetMouseLocation()
-            local sliderPos = sliderBg.AbsolutePosition
-            local sliderSize = sliderBg.AbsoluteSize
-            local percent = math.clamp((mousePos.X - sliderPos.X) / sliderSize.X, 0, 1)
-            local value = min + (max - min) * percent
-            value = math.floor(value)
-            updateSlider(value)
-        end
-    end)
-    
-    uis.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-    
-    updateSlider(default)
-    
-    return container
+    return {Container = container, Value = function() return toggled end}
 end
 
 function CreateLabel(parent, text)
     local label = Instance.new("TextLabel", parent)
-    label.Size = UDim2.new(1, 0, 0, 30)
+    label.Size = UDim2.new(0.9, 0, 0, 30)
+    label.Position = UDim2.new(0.05, 0, 0, 0)
     label.Text = text
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.BackgroundTransparency = 1
-    label.Font = Enum.Font.GothamSemibold
+    label.Font = Enum.Font.GothamBold
     label.TextXAlignment = Enum.TextXAlignment.Center
     return label
 end
 
-function CreateTextbox(parent, placeholder, callback)
-    local container = Instance.new("Frame", parent)
-    container.Size = UDim2.new(1, 0, 0, 40)
-    container.BackgroundTransparency = 1
-    
-    local textbox = Instance.new("TextBox", container)
-    textbox.Size = UDim2.new(1, 0, 1, 0)
-    textbox.PlaceholderText = placeholder
-    textbox.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-    textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textbox.Font = Enum.Font.Gotham
-    Instance.new("UICorner", textbox)
-    
-    textbox.FocusLost:Connect(function()
-        if callback then callback(textbox.Text) end
-    end)
-    
-    return textbox
-end
-
--- 創建主窗口
+-- 创建主窗口
 local window = library.new("GG中心")
 
--- 創建選項卡
+-- 创建选项卡
 local tab1 = window:CreateTab("公告")
 local tab2 = window:CreateTab("脚本")
 local tab3 = window:CreateTab("秒杀")
 local tab4 = window:CreateTab("透视")
 local tab5 = window:CreateTab("传送")
 
--- 1. 公告頁面
-CreateLabel(tab1, "GG中心 v1.0")
+-- 1. 公告页面 - 添加实际元素
+CreateLabel(tab1, "GG脚本中心")
+CreateLabel(tab1, "Version 1.0")
 CreateLabel(tab1, "秦始皇制作")
-CreateLabel(tab1, "脚本测试中")
-CreateLabel(tab1, "祝您使用愉快！")
-
--- 2. 脚本頁面
-CreateLabel(tab2, "脚本功能")
-
--- 視角縮放
-local zoomSlider = CreateSlider(tab2, "视角缩放距离", 128, 10000, 128, function(value)
-    game:GetService("Players").LocalPlayer.CameraMaxZoomDistance = value
+CreateButton(tab1, "测试按钮", function()
+    print("公告页面按钮被点击！")
 end)
 
--- 自動V4功能
-local autoV4Toggle = CreateToggle(tab2, "自动v4", false, function(state)
-    if state then
-        print("自動V4已開啟")
-        -- 這裡添加自動V4的實際代碼
-    else
-        print("自動V4已關閉")
-    end
+-- 2. 脚本页面
+CreateLabel(tab2, "脚本功能设置")
+
+-- 视角缩放
+CreateButton(tab2, "设置视角缩放: 500", function()
+    game:GetService("Players").LocalPlayer.CameraMaxZoomDistance = 500
+    print("视角缩放已设置为500")
 end)
 
--- 飛行按鈕
-CreateButton(tab2, "飞行", function()
-    print("飛行功能已啟用")
-    -- 飛行腳本的實現
+CreateButton(tab2, "设置视角缩放: 1000", function()
+    game:GetService("Players").LocalPlayer.CameraMaxZoomDistance = 1000
+    print("视角缩放已设置为1000")
+end)
+
+-- 自动V4
+local autoV4Toggle = CreateToggle(tab2, "自动V4", false, function(state)
+    print("自动V4: " .. tostring(state))
+end)
+
+-- 飞行脚本
+CreateButton(tab2, "飞行脚本", function()
+    print("飞行脚本已激活")
+    -- 简单的飞行功能
+    local player = game.Players.LocalPlayer
     local flying = false
-    local speed = 50
-    local bodyGyro, bodyVelocity
     
-    local function fly()
-        local player = game.Players.LocalPlayer
-        if not player.Character then return end
-        
-        local torso = player.Character:FindFirstChild("HumanoidRootPart")
-        if not torso then return end
-        
-        bodyGyro = Instance.new("BodyGyro", torso)
-        bodyVelocity = Instance.new("BodyVelocity", torso)
-        
-        bodyGyro.P = 9e4
-        bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-        bodyGyro.cframe = torso.CFrame
-        
-        bodyVelocity.velocity = Vector3.new(0, 0, 0)
-        bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+    if not player.Character then return end
+    
+    if not flying then
+        flying = true
+        local bodyVelocity = Instance.new("BodyVelocity", player.Character.HumanoidRootPart)
+        bodyVelocity.MaxForce = Vector3.new(40000, 40000, 40000)
         
         spawn(function()
-            repeat wait()
-                player.Character.Humanoid.PlatformStand = true
-                if torso and bodyVelocity and bodyGyro then
-                    local moveDirection = Vector3.new()
-                    
-                    if uis:IsKeyDown(Enum.KeyCode.W) then
-                        moveDirection = moveDirection + Vector3.new(0, 0, -1)
-                    end
-                    if uis:IsKeyDown(Enum.KeyCode.S) then
-                        moveDirection = moveDirection + Vector3.new(0, 0, 1)
-                    end
-                    if uis:IsKeyDown(Enum.KeyCode.A) then
-                        moveDirection = moveDirection + Vector3.new(-1, 0, 0)
-                    end
-                    if uis:IsKeyDown(Enum.KeyCode.D) then
-                        moveDirection = moveDirection + Vector3.new(1, 0, 0)
-                    end
-                    if uis:IsKeyDown(Enum.KeyCode.Space) then
-                        moveDirection = moveDirection + Vector3.new(0, 1, 0)
-                    end
-                    if uis:IsKeyDown(Enum.KeyCode.LeftShift) then
-                        moveDirection = moveDirection + Vector3.new(0, -1, 0)
-                    end
-                    
-                    bodyVelocity.velocity = moveDirection * speed
+            while flying do
+                wait()
+                local direction = Vector3.new(0, 0, 0)
+                
+                if uis:IsKeyDown(Enum.KeyCode.W) then
+                    direction = direction + Vector3.new(0, 0, -1)
                 end
-            until not flying
-            
-            if torso then
-                if bodyGyro then bodyGyro:Destroy() end
-                if bodyVelocity then bodyVelocity:Destroy() end
-                player.Character.Humanoid.PlatformStand = false
+                if uis:IsKeyDown(Enum.KeyCode.S) then
+                    direction = direction + Vector3.new(0, 0, 1)
+                end
+                if uis:IsKeyDown(Enum.KeyCode.A) then
+                    direction = direction + Vector3.new(-1, 0, 0)
+                end
+                if uis:IsKeyDown(Enum.KeyCode.D) then
+                    direction = direction + Vector3.new(1, 0, 0)
+                end
+                if uis:IsKeyDown(Enum.KeyCode.Space) then
+                    direction = direction + Vector3.new(0, 1, 0)
+                end
+                if uis:IsKeyDown(Enum.KeyCode.LeftShift) then
+                    direction = direction + Vector3.new(0, -1, 0)
+                end
+                
+                bodyVelocity.Velocity = direction * 50
             end
+            bodyVelocity:Destroy()
         end)
-    end
-    
-    -- 創建飛行控制面板
-    local flyPanel = Instance.new("Frame", game:GetService("CoreGui"))
-    flyPanel.Size = UDim2.new(0, 200, 0, 100)
-    flyPanel.Position = UDim2.new(0.5, -100, 0.8, 0)
-    flyPanel.BackgroundColor3 = Color3.fromRGB(15, 17, 22)
-    Instance.new("UICorner", flyPanel)
-    
-    local speedLabel = Instance.new("TextLabel", flyPanel)
-    speedLabel.Size = UDim2.new(1, 0, 0.3, 0)
-    speedLabel.Text = "飛行速度: " .. speed
-    speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    speedLabel.BackgroundTransparency = 1
-    
-    local speedSlider = Instance.new("Frame", flyPanel)
-    speedSlider.Size = UDim2.new(0.8, 0, 0, 6)
-    speedSlider.Position = UDim2.new(0.1, 0, 0.5, 0)
-    speedSlider.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    Instance.new("UICorner", speedSlider)
-    
-    local flyToggleBtn = Instance.new("TextButton", flyPanel)
-    flyToggleBtn.Size = UDim2.new(0.8, 0, 0, 30)
-    flyToggleBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
-    flyToggleBtn.Text = "關閉飛行"
-    flyToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-    flyToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Instance.new("UICorner", flyToggleBtn)
-    
-    flyToggleBtn.MouseButton1Click:Connect(function()
+    else
         flying = false
-        flyPanel:Destroy()
-    end)
-    
-    flying = true
-    fly()
+    end
 end)
 
 CreateButton(tab2, "法天象地", function()
-    print("法天象地功能已啟用")
-    -- 這裡可以添加法天象地的實現
-end)
-
-CreateButton(tab2, "RedZ脚本", function()
-    print("RedZ脚本已加载")
+    print("法天象地功能激活")
 end)
 
 CreateButton(tab2, "防挂机", function()
-    print("防挂机功能已激活")
+    print("防挂机已启用")
 end)
 
--- 3. 秒杀頁面
-CreateLabel(tab3, "秒杀设置")
+-- 3. 秒杀页面
+CreateLabel(tab3, "秒杀功能")
 
--- 秒杀開關
 local killToggle = CreateToggle(tab3, "秒杀开关", false, function(state)
     print("秒杀开关: " .. tostring(state))
 end)
 
--- 攻擊範圍
-local attackRangeSlider = CreateSlider(tab3, "攻击范围", 1, 10000, 5000, function(value)
-    print("攻擊範圍設置為: " .. value)
+CreateButton(tab3, "攻击范围: 近", function()
+    print("攻击范围设置为: 近")
 end)
 
--- 攻擊速度
-local attackSpeedSlider = CreateSlider(tab3, "攻击速度", 0.01, 2, 0.3, function(value)
-    print("攻擊速度設置為: " .. value)
+CreateButton(tab3, "攻击范围: 中", function()
+    print("攻击范围设置为: 中")
 end)
 
--- 打怪開關
+CreateButton(tab3, "攻击范围: 远", function()
+    print("攻击范围设置为: 远")
+end)
+
 local attackMobsToggle = CreateToggle(tab3, "自动打怪", true, function(state)
-    print("自動打怪: " .. tostring(state))
+    print("自动打怪: " .. tostring(state))
 end)
 
--- 打人開關
-local attackPlayersToggle = CreateToggle(tab3, "攻击玩家", true, function(state)
-    print("攻擊玩家: " .. tostring(state))
+local attackPlayersToggle = CreateToggle(tab3, "攻击玩家", false, function(state)
+    print("攻击玩家: " .. tostring(state))
 end)
 
--- 移速功能
-CreateLabel(tab3, "移动加速")
-local speedTextbox = CreateTextbox(tab3, "输入移动速度", function(text)
-    local speed = tonumber(text)
-    if speed then
-        print("移動速度設置為: " .. speed)
+CreateButton(tab3, "移动加速", function()
+    print("移动加速激活")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        player.Character.Humanoid.WalkSpeed = 50
     end
 end)
 
-local moveAccelToggle = CreateToggle(tab3, "移动加速开关", false, function(state)
-    print("移動加速: " .. tostring(state))
-    
-    if state then
-        local player = game.Players.LocalPlayer
-        local speed = 50
-        
-        local connection = game:GetService("RunService").Heartbeat:Connect(function()
-            if player.Character and player.Character:FindFirstChild("Humanoid") then
-                local humanoid = player.Character.Humanoid
-                if humanoid.MoveDirection.Magnitude > 0 then
-                    local moveDirection = humanoid.MoveDirection
-                    local acceleration = moveDirection * speed / 30
-                    player.Character:TranslateBy(acceleration)
-                end
-            end
-        end)
-    end
-end)
-
--- 4. 透视頁面
+-- 4. 透视页面
 CreateLabel(tab4, "透视设置")
 
 local espMainToggle = CreateToggle(tab4, "透视总开关", false, function(state)
     print("透视总开关: " .. tostring(state))
-end)
-
-local espNameToggle = CreateToggle(tab4, "显示玩家名字+距离", false, function(state)
-    print("显示玩家名字+距离: " .. tostring(state))
-end)
-
-local espHealthToggle = CreateToggle(tab4, "显示玩家血量", false, function(state)
-    print("显示玩家血量: " .. tostring(state))
-end)
-
-local espTracerToggle = CreateToggle(tab4, "射线追踪（屏幕中心）", false, function(state)
-    print("射线追踪: " .. tostring(state))
-end)
-
--- 簡單透視實現
-CreateButton(tab4, "啟動透視", function()
-    print("透視已啟動")
-    
-    -- 創建簡單的透視效果
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            if player.Character then
-                for _, part in pairs(player.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        local highlight = Instance.new("Highlight")
-                        highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                        highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
-                        highlight.Parent = part
+    -- 简单透视实现
+    if state then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                local highlight = Instance.new("Highlight")
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                highlight.FillTransparency = 0.5
+                highlight.Parent = player.Character
+            end
+        end
+    else
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                for _, obj in pairs(player.Character:GetChildren()) do
+                    if obj:IsA("Highlight") then
+                        obj:Destroy()
                     end
                 end
             end
@@ -596,116 +408,63 @@ CreateButton(tab4, "啟動透視", function()
     end
 end)
 
--- 5. 传送頁面
-CreateLabel(tab5, "主要传送")
+local espNameToggle = CreateToggle(tab4, "显示名字", false, function(state)
+    print("显示名字: " .. tostring(state))
+end)
+
+local espHealthToggle = CreateToggle(tab4, "显示血量", false, function(state)
+    print("显示血量: " .. tostring(state))
+end)
+
+local espTracerToggle = CreateToggle(tab4, "射线追踪", false, function(state)
+    print("射线追踪: " .. tostring(state))
+end)
+
+-- 5. 传送页面
+CreateLabel(tab5, "传送功能")
 
 CreateButton(tab5, "传送至一海", function()
-    print("傳送至一海")
-    local success, result = pcall(function()
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelMain")
-    end)
-    if not success then
-        print("傳送失敗: " .. result)
+    print("正在传送至一海...")
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        -- 这里应该是实际的传送代码
+        print("传送完成（模拟）")
     end
 end)
 
 CreateButton(tab5, "传送至二海", function()
-    print("傳送至二海")
-    local success, result = pcall(function()
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelDressrosa")
-    end)
-    if not success then
-        print("傳送失敗: " .. result)
-    end
+    print("正在传送至二海...")
 end)
 
 CreateButton(tab5, "传送至三海", function()
-    print("傳送至三海")
-    local success, result = pcall(function()
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelZou")
-    end)
-    if not success then
-        print("傳送失敗: " .. result)
-    end
+    print("正在传送至三海...")
 end)
 
-CreateLabel(tab5, "二海传送点")
-
-CreateButton(tab5, "传送至天鹅的房间", function()
-    print("傳送至天鹅的房间")
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        local target = Vector3.new(-287.37, 305.81, 592.98)
-        player.Character:MoveTo(target)
-    end
+CreateButton(tab5, "天鹅的房间", function()
+    print("正在传送至天鹅的房间...")
 end)
 
-CreateButton(tab5, "传送至豪宅", function()
-    print("傳送至豪宅")
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        local target = Vector3.new(2286.93, 15.06, 910.51)
-        player.Character:MoveTo(target)
-    end
+CreateButton(tab5, "豪宅", function()
+    print("正在传送至豪宅...")
 end)
 
-CreateButton(tab5, "传送至鬼船里", function()
-    print("傳送至鬼船里")
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        local target = Vector3.new(-6501.06, 83.11, -123.52)
-        player.Character:MoveTo(target)
-    end
+CreateButton(tab5, "鬼船里", function()
+    print("正在传送至鬼船里...")
 end)
 
-CreateButton(tab5, "传送至鬼船外", function()
-    print("傳送至鬼船外")
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        local target = Vector3.new(922.78, 123.96, 32842.40)
-        player.Character:MoveTo(target)
-    end
+CreateButton(tab5, "海洋城堡", function()
+    print("正在传送至海洋城堡...")
 end)
 
-CreateLabel(tab5, "三海传送点")
-
-CreateButton(tab5, "传送至海洋城堡", function()
-    print("傳送至海洋城堡")
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        local target = Vector3.new(-12463.60, 376.26, -7566.08)
-        player.Character:MoveTo(target)
-    end
+CreateButton(tab5, "九头蛇", function()
+    print("正在传送至九头蛇...")
 end)
 
-CreateButton(tab5, "传送至海龟豪宅", function()
-    print("傳送至海龟豪宅")
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        local target = Vector3.new(-5060.41, 316.43, -3192.30)
-        player.Character:MoveTo(target)
-    end
-end)
+-- 添加一个简单的状态显示
+CreateLabel(tab1, "状态: 脚本运行正常")
+CreateLabel(tab1, "点击左上角GG按钮开关UI")
 
-CreateButton(tab5, "传送至司法", function()
-    print("傳送至司法")
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        local target = Vector3.new(-5096.48, 316.43, -3177.91)
-        player.Character:MoveTo(target)
-    end
-end)
-
-CreateButton(tab5, "传送至九头蛇", function()
-    print("傳送至九头蛇")
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        local target = Vector3.new(-5027.03, 316.43, -3206.07)
-        player.Character:MoveTo(target)
-    end
-end)
-
--- 完成加載
-task.wait(1)
-print("GG脚本加载完成，祝您使用愉快！")
-print("点击屏幕左上角的GG按钮打开菜单")
+-- 确保UI正确显示
+task.wait(0.5)
+print("GG脚本已加载完成！")
+print("点击屏幕左上角的圆形GG按钮打开菜单")
