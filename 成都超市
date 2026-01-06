@@ -588,7 +588,7 @@ CreateButton(tab5, "传送至海洋城堡", function()
     local player = Players.LocalPlayer
     local targetPosition = Vector3.new(-12463.60, 376.26, -7566.08)
     
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+    if player.Charactand player.Character:FindFirstChild("HumanoidRootPart") then
         player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
     end
 end)
