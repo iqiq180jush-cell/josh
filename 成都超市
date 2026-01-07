@@ -36,49 +36,45 @@ game:GetService("StarterGui"):SetCore("SendNotification",{
 wait(0.1)
 
 -- ============================================
--- 更小的侧边UI库
+-- 简洁有效的UI库
 -- ============================================
 
-local library = { _Tabs = {}, _Pages = {} }
+local library = {_Tabs = {}, _Pages = {}}
 local services = setmetatable({}, {__index = function(_, k) return game:GetService(k) end})
 local ts, uis, players = services.TweenService, services.UserInputService, services.Players
 local lp = players.LocalPlayer
 local playerGui = lp:WaitForChild("PlayerGui", 15) or game:GetService("CoreGui")
 
--- 更好的拖拽功能
+print("开始创建UI...")
+
+-- 拖拽功能
 function library:AddDrag(obj)
     local dragging = false
     local dragStart, startPos
-    
-    local function update(input)
-        local delta = input.Position - dragStart
-        obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
     
     obj.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
             startPos = obj.Position
-            
-            local connection
-            connection = input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                    connection:Disconnect()
-                end
-            end)
         end
     end)
     
     uis.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            update(input)
+            local delta = input.Position - dragStart
+            obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    
+    uis.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
         end
     end)
 end
 
--- 创建更小的侧边窗口
+-- 创建窗口
 function library.new(name)
     local sg = Instance.new("ScreenGui")
     sg.Name = "GG_Center_UI"
@@ -86,92 +82,103 @@ function library.new(name)
     sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     sg.Parent = playerGui
 
-    -- 更小的侧边主窗口
+    -- 主窗口
     local Main = Instance.new("Frame", sg)
     Main.Name = "MainWindow"
-    Main.Size = UDim2.new(0, 400, 0, 350)  -- 更小：400x350
-    Main.Position = UDim2.new(0.5, -200, 0.5, -175)
+    Main.Size = UDim2.new(0, 450, 0, 380)
+    Main.Position = UDim2.new(0.5, -225, 0.5, -190)
     Main.BackgroundColor3 = Color3.fromRGB(15, 17, 22)
     Main.Visible = false
     Main.ClipsDescendants = true
     Instance.new("UICorner", Main)
-    library:AddDrag(Main)  -- 主窗口可拖拽
+    library:AddDrag(Main)
     library.Main = Main
 
-    -- 侧边切换按钮
+    -- 标题栏
+    local TitleBar = Instance.new("Frame", Main)
+    TitleBar.Name = "TitleBar"
+    TitleBar.Size = UDim2.new(1, 0, 0, 30)
+    TitleBar.BackgroundColor3 = Color3.fromRGB(10, 12, 15)
+    Instance.new("UICorner", TitleBar)
+    
+    local TitleLabel = Instance.new("TextLabel", TitleBar)
+    TitleLabel.Size = UDim2.new(1, -10, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+    TitleLabel.Text = name
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Font = Enum.Font.GothamSemibold
+    TitleLabel.TextSize = 14
+
+    -- 侧边按钮
     local ToggleBtn = Instance.new("TextButton", sg)
     ToggleBtn.Name = "ToggleButton"
-    ToggleBtn.Size = UDim2.new(0, 45, 0, 45)
-    ToggleBtn.Position = UDim2.new(0, 15, 0.05, 0)
+    ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+    ToggleBtn.Position = UDim2.new(0, 15, 0.1, 0)
     ToggleBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
     ToggleBtn.Text = "GG"
     ToggleBtn.TextColor3 = Color3.fromRGB(0, 255, 255)
-    ToggleBtn.TextSize = 18
+    ToggleBtn.TextSize = 20
     ToggleBtn.ZIndex = 10
     Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
     Instance.new("UIStroke", ToggleBtn).Color = Color3.fromRGB(0, 255, 255)
-    library:AddDrag(ToggleBtn)  -- 侧边按钮也可拖拽
+    library:AddDrag(ToggleBtn)
 
     -- 切换显示
     ToggleBtn.MouseButton1Click:Connect(function()
         Main.Visible = not Main.Visible
     end)
 
+    print("窗口创建完成")
     return library
 end
 
--- 创建侧边选项卡（按钮在左侧）
+-- 创建选项卡
 function library:CreateTab(name)
-    -- 左侧选项卡栏
+    print("创建选项卡: " .. name)
+    
+    -- 左侧边栏
     local SideBar = self.Main:FindFirstChild("SideBar") or Instance.new("Frame", self.Main)
     
     if SideBar.Name ~= "SideBar" then
         SideBar.Name = "SideBar"
-        SideBar.Size = UDim2.new(0, 80, 1, 0)  -- 左侧边栏
-        SideBar.Position = UDim2.new(0, 0, 0, 0)
+        SideBar.Size = UDim2.new(0, 100, 1, -30)
+        SideBar.Position = UDim2.new(0, 0, 0, 30)
         SideBar.BackgroundColor3 = Color3.fromRGB(10, 12, 15)
-        Instance.new("UICorner", SideBar)
         
         local layout = Instance.new("UIListLayout", SideBar)
-        layout.Padding = UDim.new(0, 3)
+        layout.Padding = UDim.new(0, 5)
         layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     end
 
     -- 内容页面
-    local ContentPage = Instance.new("Frame", self.Main)
+    local ContentPage = Instance.new("ScrollingFrame", self.Main)
     ContentPage.Name = name .. "_Page"
-    ContentPage.Size = UDim2.new(1, -85, 1, -10)  -- 减去左侧宽度
-    ContentPage.Position = UDim2.new(0, 85, 0, 5)
+    ContentPage.Size = UDim2.new(1, -105, 1, -35)
+    ContentPage.Position = UDim2.new(0, 105, 0, 35)
     ContentPage.BackgroundTransparency = 1
     ContentPage.Visible = false
-    ContentPage.ClipsDescendants = true
+    ContentPage.ScrollBarThickness = 3
+    ContentPage.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 200)
+    ContentPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
     
-    local canvasGroup = Instance.new("CanvasGroup", ContentPage)
-    canvasGroup.Size = UDim2.new(1, 0, 1, 0)
-    
-    local scrollFrame = Instance.new("ScrollingFrame", canvasGroup)
-    scrollFrame.Size = UDim2.new(1, 0, 1, 0)
-    scrollFrame.BackgroundTransparency = 1
-    scrollFrame.ScrollBarThickness = 3
-    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 200)
-    scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    
-    local pageLayout = Instance.new("UIListLayout", scrollFrame)
-    pageLayout.Padding = UDim.new(0, 4)
+    local pageLayout = Instance.new("UIListLayout", ContentPage)
+    pageLayout.Padding = UDim.new(0, 5)
     pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
-    -- 侧边选项卡按钮
+    -- 选项卡按钮
     local TabBtn = Instance.new("TextButton", SideBar)
     TabBtn.Name = "Tab_" .. name
-    TabBtn.Size = UDim2.new(0.85, 0, 0, 35)
+    TabBtn.Size = UDim2.new(0.9, 0, 0, 35)
     TabBtn.Text = name
     TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
     TabBtn.BackgroundColor3 = Color3.fromRGB(20, 23, 28)
     TabBtn.Font = Enum.Font.GothamSemibold
-    TabBtn.TextSize = 11
+    TabBtn.TextSize = 12
     Instance.new("UICorner", TabBtn)
 
     TabBtn.MouseButton1Click:Connect(function()
+        print("点击选项卡: " .. name)
         for _, p in pairs(self._Pages) do 
             p.Visible = false 
         end
@@ -197,23 +204,24 @@ function library:CreateTab(name)
         ContentPage.Visible = true 
         TabBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
         TabBtn.TextColor3 = Color3.fromRGB(0, 255, 200)
+        print("第一个选项卡设为可见")
     end
     
-    return scrollFrame
+    return ContentPage  -- 直接返回ScrollingFrame
 end
 
 -- ============================================
--- UI元素创建函数
+-- UI元素创建函数 - 确保能正确添加到页面
 -- ============================================
 
 local function CreateButton(parent, text, callback)
     local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(0.95, 0, 0, 32)
+    btn.Size = UDim2.new(0.95, 0, 0, 35)
     btn.Text = text
     btn.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.Gotham
-    btn.TextSize = 11
+    btn.TextSize = 12
     btn.AutoButtonColor = true
     Instance.new("UICorner", btn)
     
@@ -221,12 +229,13 @@ local function CreateButton(parent, text, callback)
         btn.MouseButton1Click:Connect(callback)
     end
     
+    print("创建按钮: " .. text)
     return btn
 end
 
 local function CreateToggle(parent, text, default, callback)
     local container = Instance.new("Frame", parent)
-    container.Size = UDim2.new(0.95, 0, 0, 28)
+    container.Size = UDim2.new(0.95, 0, 0, 30)
     container.BackgroundTransparency = 1
     
     local label = Instance.new("TextLabel", container)
@@ -235,19 +244,19 @@ local function CreateToggle(parent, text, default, callback)
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.Gotham
-    label.TextSize = 11
+    label.TextSize = 12
     
     local toggleFrame = Instance.new("TextButton", container)
-    toggleFrame.Size = UDim2.new(0, 40, 0, 20)
-    toggleFrame.Position = UDim2.new(1, -40, 0.5, -10)
+    toggleFrame.Size = UDim2.new(0, 45, 0, 22)
+    toggleFrame.Position = UDim2.new(1, -45, 0.5, -11)
     toggleFrame.Text = ""
     toggleFrame.BackgroundColor3 = default and Color3.fromRGB(0, 100, 80) or Color3.fromRGB(50, 50, 50)
     toggleFrame.AutoButtonColor = false
     Instance.new("UICorner", toggleFrame).CornerRadius = UDim.new(1, 0)
     
     local toggleCircle = Instance.new("Frame", toggleFrame)
-    toggleCircle.Size = UDim2.new(0, 16, 0, 16)
-    toggleCircle.Position = default and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+    toggleCircle.Size = UDim2.new(0, 18, 0, 18)
+    toggleCircle.Position = default and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
     toggleCircle.BackgroundColor3 = default and Color3.fromRGB(0, 255, 200) or Color3.fromRGB(255, 255, 255)
     Instance.new("UICorner", toggleCircle).CornerRadius = UDim.new(1, 0)
     
@@ -255,11 +264,11 @@ local function CreateToggle(parent, text, default, callback)
     
     local function updateToggle()
         if toggled then
-            toggleCircle.Position = UDim2.new(1, -18, 0.5, -8)
+            toggleCircle.Position = UDim2.new(1, -20, 0.5, -9)
             toggleCircle.BackgroundColor3 = Color3.fromRGB(0, 255, 200)
             toggleFrame.BackgroundColor3 = Color3.fromRGB(0, 100, 80)
         else
-            toggleCircle.Position = UDim2.new(0, 2, 0.5, -8)
+            toggleCircle.Position = UDim2.new(0, 2, 0.5, -9)
             toggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             toggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         end
@@ -272,22 +281,23 @@ local function CreateToggle(parent, text, default, callback)
     end)
     
     updateToggle()
+    print("创建开关: " .. text)
     return container
 end
 
 local function CreateLabel(parent, text)
     local label = Instance.new("TextLabel", parent)
-    label.Size = UDim2.new(0.95, 0, 0, 24)
+    label.Size = UDim2.new(0.95, 0, 0, 25)
     label.Text = text
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamSemibold
-    label.TextSize = 12
+    label.TextSize = 13
     
+    print("创建标签: " .. text)
     return label
 end
 
--- 滑动条（确保可拖动）
 local function CreateSlider(parent, text, min, max, default, callback)
     local container = Instance.new("Frame", parent)
     container.Size = UDim2.new(0.95, 0, 0, 50)
@@ -299,7 +309,7 @@ local function CreateSlider(parent, text, min, max, default, callback)
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.Gotham
-    label.TextSize = 11
+    label.TextSize = 12
     
     local sliderBg = Instance.new("Frame", container)
     sliderBg.Name = "SliderBG"
@@ -316,8 +326,8 @@ local function CreateSlider(parent, text, min, max, default, callback)
     
     local sliderBtn = Instance.new("TextButton", sliderBg)
     sliderBtn.Name = "SliderButton"
-    sliderBtn.Size = UDim2.new(0, 16, 0, 16)
-    sliderBtn.Position = UDim2.new((default - min) / (max - min), -8, 0.5, -8)
+    sliderBtn.Size = UDim2.new(0, 18, 0, 18)
+    sliderBtn.Position = UDim2.new((default - min) / (max - min), -9, 0.5, -9)
     sliderBtn.Text = ""
     sliderBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     sliderBtn.AutoButtonColor = false
@@ -329,18 +339,16 @@ local function CreateSlider(parent, text, min, max, default, callback)
     local function updateSlider(value)
         local percent = math.clamp((value - min) / (max - min), 0, 1)
         sliderFill.Size = UDim2.new(percent, 0, 1, 0)
-        sliderBtn.Position = UDim2.new(percent, -8, 0.5, -8)
+        sliderBtn.Position = UDim2.new(percent, -9, 0.5, -9)
         label.Text = text .. ": " .. tostring(math.floor(value))
         if callback then callback(math.floor(value)) end
     end
     
-    -- 鼠标按下
     sliderBtn.MouseButton1Down:Connect(function()
         dragging = true
     end)
     
     sliderBg.MouseButton1Down:Connect(function(x, y)
-        dragging = true
         local mousePos = Vector2.new(x, y)
         local sliderPos = sliderBg.AbsolutePosition
         local sliderSize = sliderBg.AbsoluteSize.X
@@ -351,7 +359,6 @@ local function CreateSlider(parent, text, min, max, default, callback)
         updateSlider(value)
     end)
     
-    -- 鼠标移动
     uis.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local mousePos = uis:GetMouseLocation()
@@ -365,7 +372,6 @@ local function CreateSlider(parent, text, min, max, default, callback)
         end
     end)
     
-    -- 鼠标释放
     uis.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
@@ -373,10 +379,10 @@ local function CreateSlider(parent, text, min, max, default, callback)
     end)
     
     updateSlider(default)
+    print("创建滑动条: " .. text)
     return container
 end
 
--- Textbox
 local function CreateTextbox(parent, labelText, placeholder, callback)
     local container = Instance.new("Frame", parent)
     container.Size = UDim2.new(0.95, 0, 0, 50)
@@ -388,7 +394,7 @@ local function CreateTextbox(parent, labelText, placeholder, callback)
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.Gotham
-    label.TextSize = 11
+    label.TextSize = 12
     
     local textbox = Instance.new("TextBox", container)
     textbox.Size = UDim2.new(1, 0, 0, 25)
@@ -397,7 +403,7 @@ local function CreateTextbox(parent, labelText, placeholder, callback)
     textbox.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
     textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
     textbox.Font = Enum.Font.Gotham
-    textbox.TextSize = 11
+    textbox.TextSize = 12
     Instance.new("UICorner", textbox)
     
     textbox.FocusLost:Connect(function()
@@ -406,15 +412,18 @@ local function CreateTextbox(parent, labelText, placeholder, callback)
         end
     end)
     
-    return textbox
+    print("创建输入框: " .. labelText)
+    return container
 end
 
 -- ============================================
 -- 创建主窗口和选项卡
 -- ============================================
 
+print("正在创建主窗口...")
 local window = library.new("GG中心")
 
+print("正在创建选项卡...")
 local UITab1 = window:CreateTab("公告")
 local UITab2 = window:CreateTab("脚本")
 local UITab3 = window:CreateTab("秒杀")
@@ -422,278 +431,119 @@ local UITab4 = window:CreateTab("透视")
 local UITab5 = window:CreateTab("传送")
 
 -- ============================================
--- 添加功能内容
+-- 添加内容到各个选项卡
 -- ============================================
 
+print("添加内容到公告页面...")
 -- 公告页面
 CreateLabel(UITab1, "GG脚本中心")
 CreateLabel(UITab1, "秦始皇制作")
-CreateLabel(UITab1, "测试版")
+CreateLabel(UITab1, "版本 1.0")
+CreateLabel(UITab1, "脚本测试中")
 
+CreateButton(UITab1, "测试按钮", function()
+    print("测试按钮被点击！")
+    game:GetService("StarterGui"):SetCore("SendNotification",{
+        Title = "测试",
+        Text = "UI功能正常！",
+        Duration = 3;
+    })
+end)
+
+print("添加内容到脚本页面...")
 -- 脚本页面
 CreateLabel(UITab2, "视角缩放")
 CreateSlider(UITab2, "视角距离", 128, 10000, 128, function(Value)
     game:GetService("Players").LocalPlayer.CameraMaxZoomDistance = Value
+    print("视角缩放设置为: " .. Value)
 end)
 
--- 自动V4
-local autoV4Task = nil
-local LocalPlayer = game:GetService("Players").LocalPlayer
-
-local function callAwakeningRemote()
-    local Backpack = LocalPlayer:FindFirstChild("Backpack")
-    if not Backpack then return end
-    
-    local Awakening = Backpack:FindFirstChild("Awakening")
-    if not Awakening then return end
-    
-    local RemoteFunc = Awakening:FindFirstChild("RemoteFunction")
-    if not RemoteFunc or not RemoteFunc:IsA("RemoteFunction") then return end
-    
-    local success, err = pcall(function()
-        RemoteFunc:InvokeServer(true)
-    end)
-    if not success then
-        warn("自动v4调用失败：", err)
-    end
-end
-
-CreateToggle(UITab2, "自动v4", false, function(IsEnabled)
-    if autoV4Task then
-        task.cancel(autoV4Task)
-        autoV4Task = nil
-    end
-    
-    if IsEnabled then
-        autoV4Task = task.spawn(function()
-            while true do
-                callAwakeningRemote()
-                task.wait(1) 
-            end
-        end)
-    end
+CreateToggle(UITab2, "自动V4", false, function(state)
+    print("自动V4: " .. tostring(state))
 end)
 
--- 其他脚本
-CreateButton(UITab2, "飞行", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/iqiq180jash-afk/Xuan/main/%E9%A3%9B%E8%A1%8C"))()
+CreateButton(UITab2, "飞行脚本", function()
+    print("飞行脚本")
 end)
 
 CreateButton(UITab2, "法天象地", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaoxuan-77/-/refs/heads/main/法天像地"))()
+    print("法天象地")
 end)
 
-CreateButton(UITab2, "redz", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaoxuan-77/-/refs/heads/main/redz"))()
+CreateButton(UITab2, "防挂机", function()
+    print("防挂机开启")
 end)
 
+print("添加内容到秒杀页面...")
 -- 秒杀页面
 CreateLabel(UITab3, "秒杀设置")
 
--- 秒杀变量
-local _ENV = (getgenv or getrenv or getfenv)()
-local Settings = {AutoClick = true, ClickDelay = 0.3}
-Settings.Distance = 5000
-local _G = _G or getfenv(0)._G
-_G.FastAttack = _G.FastAttack ~= nil and _G.FastAttack or true
-
-CreateToggle(UITab3, "开关", _G.FastAttack, function(state)
-    if _ENV.rz_FastAttack then
-        _ENV.rz_FastAttack.IsRunning = state
-        _G.FastAttack = state
-    end
+CreateToggle(UITab3, "秒杀开关", false, function(state)
+    print("秒杀开关: " .. tostring(state))
 end)
 
-CreateTextbox(UITab3, "范围", "10000", function(text)
-    local num = tonumber(text) or 10000
-    num = math.floor(math.clamp(num, 1, 10000))
-    if _ENV.rz_FastAttack then
-        _ENV.rz_FastAttack.Distance = num
-    end
+CreateTextbox(UITab3, "攻击范围", "10000", function(text)
+    print("攻击范围: " .. text)
 end)
 
-CreateTextbox(UITab3, "攻速", "0.1", function(text)
-    local num = tonumber(text) or 0.1
-    num = math.round(math.clamp(num, 0.01, 2) * 100) / 100
-    Settings.ClickDelay = num
+CreateTextbox(UITab3, "攻击速度", "0.1", function(text)
+    print("攻击速度: " .. text)
 end)
 
 CreateToggle(UITab3, "打怪", true, function(state)
-    if _ENV.rz_FastAttack then
-        _ENV.rz_FastAttack.attackMobs = state
-    end
+    print("打怪: " .. tostring(state))
 end)
 
-CreateToggle(UITab3, "打人", true, function(state)
-    if _ENV.rz_FastAttack then
-        _ENV.rz_FastAttack.attackPlayers = state
-    end
+CreateToggle(UITab3, "打人", false, function(state)
+    print("打人: " .. tostring(state))
 end)
 
--- 移速功能
-local translateSpeed = 50
-local translateAccelEnabled = false
-local translateConnection = nil
-
-CreateTextbox(UITab3, "速度", "請輸入數值", function(Value)
-    local speed = tonumber(Value)
-    if speed then
-        translateSpeed = speed
-    end
-end)
-
-CreateToggle(UITab3, "加速开关", false, function(State)
-    translateAccelEnabled = State
-    
-    if translateConnection then
-        translateConnection:Disconnect()
-        translateConnection = nil
-    end
-    
-    if State then
-        translateConnection = game:GetService("RunService").Heartbeat:Connect(function()
-            if game:GetService("Players").LocalPlayer.Character and 
-               game:GetService("Players").LocalPlayer.Character.Humanoid then
-               
-                local humanoid = game:GetService("Players").LocalPlayer.Character.Humanoid
-                
-                if humanoid.MoveDirection.Magnitude > 0 then
-                    local moveDirection = humanoid.MoveDirection
-                    local acceleration = moveDirection * translateSpeed / 30
-                    
-                    game:GetService("Players").LocalPlayer.Character:TranslateBy(acceleration)
-                end
-            end
-        end)
-    end
-end)
-
+print("添加内容到透视页面...")
 -- 透视页面
 CreateLabel(UITab4, "透视设置")
 
-local ESPConfig = {
-    MainSwitch = false,     
-    ShowNameDistance = false, 
-    ShowTracer = false,       
-    ShowHealth = false        
-}
-
-local ESPElements = {}
-
-local function CleanupPlayerESP(player)
-    if not ESPElements[player.UserId] then return end
-    
-    if ESPElements[player.UserId].Highlight then
-        ESPElements[player.UserId].Highlight:Destroy()
-        ESPElements[player.UserId].Highlight = nil
-    end
-    
-    if ESPElements[player.UserId].Billboard then
-        ESPElements[player.UserId].Billboard:Destroy()
-        ESPElements[player.UserId].Billboard = nil
-    end
-end
-
-local function UpdateAllESP()
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            CleanupPlayerESP(player)
-            
-            if ESPConfig.MainSwitch and player.Character then
-                -- 高亮效果
-                local highlight = Instance.new("Highlight")
-                highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
-                highlight.FillTransparency = 0.5
-                highlight.Parent = player.Character
-                
-                ESPElements[player.UserId] = ESPElements[player.UserId] or {}
-                ESPElements[player.UserId].Highlight = highlight
-                
-                -- 显示信息
-                if ESPConfig.ShowNameDistance or ESPConfig.ShowHealth then
-                    local billboard = Instance.new("BillboardGui")
-                    billboard.Size = UDim2.new(0, 200, 0, 50)
-                    billboard.StudsOffset = Vector3.new(0, 3, 0)
-                    billboard.AlwaysOnTop = true
-                    billboard.Adornee = player.Character:FindFirstChild("Head")
-                    billboard.Parent = player.Character:FindFirstChild("Head")
-                    
-                    local nameLabel = Instance.new("TextLabel", billboard)
-                    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
-                    nameLabel.Text = player.Name
-                    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    nameLabel.BackgroundTransparency = 1
-                    nameLabel.Font = Enum.Font.GothamBold
-                    
-                    ESPElements[player.UserId].Billboard = billboard
-                end
-            end
-        end
-    end
-end
-
--- 玩家事件
-game.Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        task.wait(0.5)
-        UpdateAllESP()
-    end)
+CreateToggle(UITab4, "透视开关", false, function(state)
+    print("透视开关: " .. tostring(state))
 end)
 
--- 透视UI控件
-CreateToggle(UITab4, "透视总开关", false, function(enabled)
-    ESPConfig.MainSwitch = enabled
-    UpdateAllESP()
+CreateToggle(UITab4, "显示名字", false, function(state)
+    print("显示名字: " .. tostring(state))
 end)
 
-CreateToggle(UITab4, "显示名字+距离", false, function(enabled)
-    ESPConfig.ShowNameDistance = enabled
-    UpdateAllESP()
+CreateToggle(UITab4, "显示血量", false, function(state)
+    print("显示血量: " .. tostring(state))
 end)
 
-CreateToggle(UITab4, "显示血量", false, function(enabled)
-    ESPConfig.ShowHealth = enabled
-    UpdateAllESP()
+CreateToggle(UITab4, "射线追踪", false, function(state)
+    print("射线追踪: " .. tostring(state))
 end)
 
-CreateToggle(UITab4, "射线追踪", false, function(enabled)
-    ESPConfig.ShowTracer = enabled
-end)
-
+print("添加内容到传送页面...")
 -- 传送页面
-CreateLabel(UITab5, "主要传送")
+CreateLabel(UITab5, "传送功能")
 
 CreateButton(UITab5, "传送至一海", function()
-    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelMain")
+    print("传送至一海")
 end)
 
 CreateButton(UITab5, "传送至二海", function()
-    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelDressrosa")
+    print("传送至二海")
 end)
 
 CreateButton(UITab5, "传送至三海", function()
-    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelZou")
+    print("传送至三海")
 end)
 
-CreateButton(UITab5, "天鹅的房间", function()
-    local player = game.Players.LocalPlayer
-    local target = Vector3.new(-287.37, 305.81, 592.98)
-    if player.Character then
-        player.Character:MoveTo(target)
-    end
+CreateButton(UITab5, "天鹅房间", function()
+    print("天鹅房间")
 end)
 
 CreateButton(UITab5, "豪宅", function()
-    local player = game.Players.LocalPlayer
-    local target = Vector3.new(2286.93, 15.06, 910.51)
-    if player.Character then
-        player.Character:MoveTo(target)
-    end
+    print("豪宅")
 end)
 
 -- ============================================
--- 防挂机
+-- 防挂机功能
 -- ============================================
 
 local VirtualUser = game:GetService("VirtualUser")
@@ -706,7 +556,7 @@ end)
 -- 完成加载
 -- ============================================
 
-task.wait(1)
+task.wait(0.5)
 
 game:GetService("StarterGui"):SetCore("SendNotification",{
 	Title = "GG脚本",
@@ -715,11 +565,11 @@ game:GetService("StarterGui"):SetCore("SendNotification",{
 })
 
 print("=========================================")
-print("GG脚本已完全加载！")
-print("UI特性：")
-print("1. 更小尺寸：400x350")
-print("2. 侧边按钮布局")
-print("3. 主窗口和侧边按钮都可拖拽")
-print("4. 滑动条可拖动")
-print("5. Textbox placeholder: 請輸入數值")
+print("UI创建完成！")
+print("请检查：")
+print("1. 屏幕左上角是否有蓝色GG按钮？")
+print("2. 点击GG按钮是否能显示UI窗口？")
+print("3. UI窗口左侧是否有5个选项卡按钮？")
+print("4. 点击选项卡是否能切换页面？")
+print("5. 每个页面是否有内容？")
 print("=========================================")
