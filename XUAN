@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://gist.githubusercontent.com/iqiq180jush-cell/228d92def4f9764f87b40f991cde38b9/raw/bc9dd88cebb3da26c0853b1a0bac92f581e84cb9/XXXXXXXXXXXXXXXXXXXX.Lua")
+loadstring(game:HttpGet("https://gist.githubusercontent.com/iqiq180jush-cell/228d92def4f9764f87b40f991cde38b9/raw/bc9dd88cebb3da26c0853b1a0bac92f581e84cb9/XXXXXXXXXXXXXXXXXXXX.Lua"))()
